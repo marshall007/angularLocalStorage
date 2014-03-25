@@ -12,6 +12,7 @@
      */
     var storage = (typeof $window.localStorage === 'undefined') ? undefined : $window.localStorage;
     var supported = typeof storage !== 'undefined';
+    var watchers = {};
 
     var privateMethods = {
       /**
@@ -135,7 +136,7 @@
 
         // Register a listener for changes on the $scope value
         // to update the localStorage value
-        $scope.$watch(key, function (val) {
+        watchers[storeName] = $scope.$watch(key, function (val) {
           if (angular.isDefined(val)) {
             publicMethods.set(storeName, val);
           }
@@ -159,11 +160,17 @@
           storeName = storeName || key;
         }
 
-        $parse(key).assign($scope, null);
-        $scope.$watch(key, function () { });
+        if (watchers[storeName]) {
+          watchers[storeName]();
+        } else {
+          console.warn('Watcher for "' + storeName + '" was never registered.')
+        }
+
         if (remove) {
           publicMethods.remove(storeName);
         }
+
+        $parse(key).assign($scope, null);
       },
       /**
        * Clear All - let's you clear out ALL localStorage variables, use this carefully!
