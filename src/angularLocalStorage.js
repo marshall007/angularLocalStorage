@@ -134,6 +134,11 @@
         // If it does exist assign it to the $scope value
         $parse(key).assign($scope, publicMethods.get(storeName));
 
+        // Unregister existing listeners just in case
+        if (watchers[storeName]) {
+          watchers[storeName]();
+        }
+
         // Register a listener for changes on the $scope value
         // to update the localStorage value
         watchers[storeName] = $scope.$watch(key, function (val) {
